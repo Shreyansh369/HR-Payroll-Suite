@@ -14,23 +14,24 @@ import { addMonths, endOfMonth, startOfMonth, yearOf } from "@/lib/dates";
 import { cn } from "@/lib/cn";
 
 function ReportView({ reportId }: { reportId: string }) {
-  const { ctx } = useSession();
+  const { ctx, can } = useSession();
   const params = useSearchParams();
   const def = REPORTS.find((r) => r.id === reportId);
+  const allowed = !!def && can(def.permission);
   const [runId, setRunId] = useState(params.get("runId") ?? "");
   const [year, setYear] = useState(yearOf(ctx.today));
   const [from, setFrom] = useState(`${ctx.today.slice(0, 4)}-01-01`);
   const [to, setTo] = useState(ctx.today);
   const [asOf, setAsOf] = useState(ctx.today);
   const needs = def?.params ?? [];
-  const runs = useQ("payroll.runs.list", {}, { enabled: needs.includes("run") });
+  const runs = useQ("payroll.runs.list", {}, { enabled: allowed && needs.includes("run") });
   const calculated = runs.data?.filter((r) => r.totals) ?? [];
   const effectiveRun = runId || calculated[0]?.id || "";
   const ready = !needs.includes("run") || !!effectiveRun;
   const q = useQ(
     "reports.run",
     { reportId, runId: needs.includes("run") ? effectiveRun : undefined, year: needs.includes("year") ? year : undefined, from: needs.includes("range") ? from : undefined, to: needs.includes("range") ? to : undefined, asOf: needs.includes("asOf") ? asOf : undefined },
-    { enabled: !!def && ready },
+    { enabled: allowed && ready },
   );
   const r = q.data;
 
@@ -52,6 +53,7 @@ function ReportView({ reportId }: { reportId: string }) {
   );
 
   if (!def) return <ErrorState message="This report does not exist." />;
+  if (!allowed) return <ErrorState message="You do not have permission to view this report." />;
   const presets = [
     { label: "Year to date", from: `${ctx.today.slice(0, 4)}-01-01`, to: ctx.today },
     { label: "Last month", from: addMonths(startOfMonth(ctx.today), -1), to: endOfMonth(addMonths(startOfMonth(ctx.today), -1)) },

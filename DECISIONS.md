@@ -159,18 +159,24 @@ storage adapter, so production downloads are always authorized server-side.
 
 Max upload 8 MB. Allowed types: PDF, PNG, JPEG, WebP, plain text, CSV, DOCX, XLSX.
 The server validates the declared MIME type *and* magic bytes. Demo stores bytes in
-IndexedDB; production uses an S3-compatible bucket or a local directory
-(`STORAGE_DRIVER=s3|local`).
+IndexedDB; production stores bytes in PostgreSQL (`document_blobs`, default) or on a
+persistent volume (`STORAGE_DRIVER=database|local`). An S3-compatible driver is a small
+addition behind the same `DocumentStorage` interface but is not included; at an 8 MB
+cap and small-business volumes, database storage keeps backups to a single system.
 
 ## D-014 Sessions and passwords (production)
 
 - Passwords: `scrypt` (N=2^15, r=8, p=1, 64-byte key, per-user salt).
 - Sessions: random 32-byte token in an `HttpOnly; Secure; SameSite=Lax` cookie; only
   the SHA-256 hash is stored. 12-hour idle expiry, 7-day absolute expiry.
-- CSRF: all state-changing requests are `POST` with JSON and must carry an `Origin`
-  header matching `APP_URL`.
-- Login rate limit: 10 attempts per 15 minutes per IP + email (in-process limiter;
-  replace with a shared store when running multiple instances).
+- CSRF: all state-changing requests are `POST` with `application/json`, and the `Origin`
+  header (or `Sec-Fetch-Site`) must match `APP_URL` or the request host. Combined with
+  SameSite=Lax this blocks cross-site form and fetch attacks without tokens.
+- Login rate limits are stored in PostgreSQL (`rate_limits`) so they hold across
+  instances: 30 attempts per 15 minutes per IP and 8 per account; the account counter
+  resets on success. Failed sign-ins of existing accounts are audited.
+- First-run setup (`/setup`) creates the organisation and owner only while the database
+  has no organisation, and only with the deployer's `SETUP_TOKEN`.
 - 2FA: TOTP (RFC 6238) enrolment and verification; secrets encrypted with
   `DATA_ENCRYPTION_KEY`.
 
@@ -197,13 +203,15 @@ synthetic identifiers only.
 `plan.md` mentions "no recurring subscription charge during the first two post-purchase
 calendar months if that is the final commercial promise". This is a configuration value
 (`hosted.subscriptionFreeMonthsAfterPurchase`, default `2`) used by the comparison
-calculator and Checkout (`trial_period_days` / `billing_cycle_anchor`). It must match
-the final contract.
+calculator and Checkout. Checkout sets `subscription_data.trial_end` to the later of
+the trial end and purchase + N calendar months (`hostedTrialEnd`), and adds the setup
+fee as a one-time line on the first invoice. Verify the exact charging behaviour in
+Stripe test mode before going live. It must match the final contract.
 
 ## D-018 Icons and typography
 
 - Hugeicons free Stroke Rounded set (commercial use permitted by its licence). All icons
-  are imported individually through `src/components/ui/icons.ts`. No Lucide.
+  are imported individually through `src/components/ui/icon.tsx`. No Lucide.
 - IBM Plex Sans (UI) and IBM Plex Mono (identifiers), self-hosted through Fontsource so
   builds need no network access.
 
@@ -218,3 +226,33 @@ an approved request writes a reversing entry. History is never deleted.
 
 Historical payroll rows are imported as `historical` payroll runs in `LOCKED` state so
 that YTD totals and reports include pre-system payroll without fabricating line detail.
+
+## D-021 Draft-only statutory rules block production payroll
+
+Draft rules are ignored by the engine, so a company whose only rule for a code is a
+draft would otherwise calculate *no* deduction silently. Pre-flight raises
+`RULE_DRAFT_ONLY_<code>` (error in production, warning in demo) whenever a draft covers
+the period and no approved rule does. New production companies start with draft
+placeholders, so live payroll is impossible until someone verifies and approves rates.
+
+## D-022 Integrity enforced by the database
+
+Beyond application checks, PostgreSQL enforces: unique employee codes per company,
+one regular run per company/frequency/period, one result per run and employee, date
+order checks, status enumerations, demo organisations rejected (`kind = 'customer'`),
+an append-only audit log, and immutability of results of approved/finalized/locked
+runs (triggers in `drizzle/0001_integrity.sql`). The memory repository mirrors the
+uniqueness rules so the demo behaves the same.
+
+## D-023 Every workflow is tested against both repositories
+
+`tests/integration/workflows.test.ts` runs each scenario against the in-memory
+repository and against PostgreSQL (PGlite with the real migrations). This caught a
+procedure writing outside its own transaction, which is invisible in memory.
+
+## D-024 No fake integrations in the marketing site
+
+The contact form composes an email in the visitor's mail client rather than posting to
+a backend that does not exist. Pricing buttons in the demo lead to contact, not to a
+checkout that cannot complete. Legal pages are templates, labelled as not in force
+until reviewed by counsel, with bracketed placeholders for operator details.
