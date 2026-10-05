@@ -466,7 +466,7 @@ export const importProcedures = {
       const valid = rows.filter((r) => r.status === "valid");
       if (valid.length === 0) throw conflict("No rows are valid. Fix the errors and try again.");
       const batchId = ctx.ids("imp");
-      const imported = await ctx.repo.transaction(async () => commitRows(ctx, input.entity, valid, batchId));
+      const imported = await ctx.repo.transaction(async (repo) => commitRows({ ...ctx, repo }, input.entity, valid, batchId));
       const summary = summarize(rows);
       const now = nowISO(ctx);
       const batch: ImportBatch = {

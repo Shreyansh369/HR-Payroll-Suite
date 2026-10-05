@@ -20,7 +20,7 @@ import type {
   TenantCollection,
   TenantCollectionName,
 } from "@/repositories/interfaces";
-import { COLLECTIONS, assertPromoted } from "@/repositories/spec";
+import { COLLECTIONS, UNIQUE_MESSAGES, assertPromoted } from "@/repositories/spec";
 import { AppError, conflict, notFound } from "@/lib/errors";
 
 export const STATE_VERSION = 4;
@@ -139,13 +139,6 @@ const UNIQUES: Uniques = {
   payrollResults: (e) => `${(e as unknown as { runId: string }).runId}|${(e as unknown as { employeeId: string }).employeeId}`,
 };
 
-const UNIQUE_MESSAGES: Partial<Record<TenantCollectionName, string>> = {
-  employees: "An employee with this Employee ID already exists in this company.",
-  departments: "A department with this code already exists.",
-  leaveTypes: "A leave type with this code already exists.",
-  payrollRuns: "A regular payroll run already exists for this period.",
-  payrollResults: "This employee already has a result in this payroll run.",
-};
 
 export class InMemoryRepository implements Repository {
   private state: RepositoryState;

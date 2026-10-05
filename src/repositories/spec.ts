@@ -169,6 +169,15 @@ export const COLLECTIONS: Record<TenantCollectionName, CollectionSpec> = {
   },
 };
 
+/** User-facing messages for uniqueness violations, shared by every implementation. */
+export const UNIQUE_MESSAGES: Partial<Record<TenantCollectionName, string>> = {
+  employees: "An employee with this Employee ID already exists in this company.",
+  departments: "A department with this code already exists.",
+  leaveTypes: "A leave type with this code already exists.",
+  payrollRuns: "A regular payroll run already exists for this period.",
+  payrollResults: "This employee already has a result in this payroll run.",
+};
+
 export function assertPromoted(collection: TenantCollectionName, field: string) {
   if (!(field in COLLECTIONS[collection].promoted)) {
     throw new Error(`Field "${field}" is not queryable on ${collection}. Add it to COLLECTIONS.promoted.`);

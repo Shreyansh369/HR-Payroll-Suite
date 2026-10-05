@@ -635,6 +635,7 @@ export const employeeProcedures = {
       if (results > 0) throw conflict("This employee has payroll history and cannot be deleted. Archive them instead.");
       const reports = await ctx.repo.employees.count(ctx.actor.companyId, { where: { managerId: id } });
       if (reports > 0) throw conflict("Reassign this employee's direct reports before deleting.");
+      const storageKeys: string[] = [];
       await ctx.repo.transaction(async (repo) => {
         const c = ctx.actor.companyId;
         const collections = [repo.employmentEvents, repo.payRates, repo.schedules, repo.payItems, repo.loans, repo.leaveLedger, repo.leaveRequests, repo.timesheets, repo.attendanceCorrections, repo.workflows] as const;
@@ -644,11 +645,13 @@ export const employeeProcedures = {
         }
         const docs = await repo.documents.list(c, { where: { employeeId: id } });
         for (const doc of docs) {
-          await ctx.storage.delete(doc.storageKey);
+          storageKeys.push(doc.storageKey);
           await repo.documents.remove(c, doc.id);
         }
         await repo.employees.remove(c, id);
       });
+      // File bytes are removed only after the records are gone for good.
+      for (const key of storageKeys) await ctx.storage.delete(key);
       await audit(ctx, { action: "employee.deleted", entityType: "employee", entityId: id, summary: `Deleted ${displayName(e)} (${e.employeeCode})`, before: { employeeCode: e.employeeCode, name: displayName(e) } });
       return { ok: true };
     },
