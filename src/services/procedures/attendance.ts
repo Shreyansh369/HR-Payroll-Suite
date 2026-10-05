@@ -37,7 +37,8 @@ export const attendanceProcedures = {
         entries: entries.map((t) => ({ ...t, locked: t.status === "approved" && isLocked(t.employeeId, t.date) })),
         employees: employees
           .filter((e) => e.hireDate <= input.to && (!e.terminationDate || e.terminationDate >= input.from))
-          .map((e) => ({ id: e.id, name: displayName(e), code: e.employeeCode, departmentName: e.departmentId ? (deps.get(e.departmentId) ?? "") : "" })),
+          .map((e) => ({ id: e.id, name: displayName(e), code: e.employeeCode, departmentName: e.departmentId ? (deps.get(e.departmentId) ?? "") : "" }))
+          .sort((a, b) => a.name.localeCompare(b.name)),
         canEdit: hasPermission(ctx.actor, "attendance.edit"),
         canApprove: hasPermission(ctx.actor, "attendance.approve"),
       };
