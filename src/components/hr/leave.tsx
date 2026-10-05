@@ -41,7 +41,7 @@ export function RecordLeaveDialog({ open, onOpenChange, employeeId: fixedEmploye
 
   const create = useM("leave.requests.create", {
     onSuccess: (r) => {
-      toast.success(r.request.status === "approved" ? "Leave recorded and approved" : "Leave request submitted", `${formatNumber(r.request.quantity)} ${r.request.unit} · ${formatRange(r.request.startDate, r.request.endDate)}`);
+      toast.success(r.request.status === "approved" ? "Leave recorded and approved" : "Leave request submitted", `${formatNumber(r.request.quantity)} ${r.request.quantity === 1 ? r.request.unit.replace(/s$/, "") : r.request.unit} · ${formatRange(r.request.startDate, r.request.endDate)}`);
       if (r.warning) toast.warning("Payroll already finalized", r.warning);
       onOpenChange(false);
       setReason("");

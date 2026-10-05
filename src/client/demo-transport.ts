@@ -57,9 +57,19 @@ export class DemoTransport implements Transport {
     return state;
   }
 
-  /** Serialise all operations so in-memory transactions never interleave. */
+  /**
+   * Serialise all operations so in-memory transactions never interleave, and
+   * persist before resolving so a change survives an immediate reload.
+   */
   private exclusive<T>(fn: () => Promise<T>): Promise<T> {
-    const run = this.queue.then(fn, fn);
+    const task = async () => {
+      try {
+        return await fn();
+      } finally {
+        await this.repo?.flush();
+      }
+    };
+    const run = this.queue.then(task, task);
     this.queue = run.catch(() => undefined);
     return run;
   }

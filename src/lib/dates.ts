@@ -217,6 +217,7 @@ export function formatDate(iso: ISODate | null | undefined, opts: { year?: boole
 
 /** "1–15 Oct 2026", "28 Sep – 11 Oct 2026", "16 Dec 2026 – 15 Jan 2027" */
 export function formatRange(start: ISODate, end: ISODate): string {
+  if (start === end) return formatDate(start);
   if (yearOf(start) !== yearOf(end)) return `${formatDate(start)} – ${formatDate(end)}`;
   if (monthOf(start) !== monthOf(end)) return `${formatDate(start, { year: false })} – ${formatDate(end)}`;
   return `${+start.slice(8, 10)}–${formatDate(end)}`;
