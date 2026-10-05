@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useId, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react";
+import { createContext, forwardRef, useContext, useId, type AriaAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react";
 import { Switch as RSwitch } from "radix-ui";
 import { cn } from "@/lib/cn";
 import { Icon } from "@/components/ui/icon";
@@ -8,10 +8,25 @@ import { Icon } from "@/components/ui/icon";
 const control =
   "w-full rounded-md border border-line-strong bg-surface px-2.5 text-[13px] text-ink shadow-xs placeholder:text-ink-4 transition-[border-color,box-shadow] duration-100 hover:border-ink-4 focus:border-accent focus:outline-none focus:ring-3 focus:ring-accent/15 disabled:cursor-not-allowed disabled:bg-surface-3 disabled:text-ink-3 aria-[invalid=true]:border-danger aria-[invalid=true]:focus:ring-danger/15";
 
+/** Links a Field's label, hint and error to the control inside it. */
+const FieldContext = createContext<{ id: string; describedBy?: string; invalid: boolean } | null>(null);
+
+function useFieldProps<T extends AriaAttributes & { id?: string }>(props: T): T {
+  const field = useContext(FieldContext);
+  if (!field) return props;
+  return {
+    ...props,
+    id: props.id ?? field.id,
+    "aria-describedby": props["aria-describedby"] ?? field.describedBy,
+    "aria-invalid": props["aria-invalid"] ?? (field.invalid || undefined),
+  };
+}
+
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { prefix?: string; suffix?: string }>(function Input(
-  { className, prefix, suffix, ...rest },
+  { className, prefix, suffix, ...props },
   ref,
 ) {
+  const rest = useFieldProps(props);
   if (prefix || suffix) {
     return (
       <div className="relative">
@@ -24,11 +39,13 @@ export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputE
   return <input ref={ref} className={cn(control, "h-8 max-sm:h-10", className)} {...rest} />;
 });
 
-export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(function Textarea({ className, rows = 3, ...rest }, ref) {
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(function Textarea({ className, rows = 3, ...props }, ref) {
+  const rest = useFieldProps(props);
   return <textarea ref={ref} rows={rows} className={cn(control, "py-1.5 leading-relaxed", className)} {...rest} />;
 });
 
-export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(function Select({ className, children, ...rest }, ref) {
+export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(function Select({ className, children, ...props }, ref) {
+  const rest = useFieldProps(props);
   return (
     <div className="relative">
       <select ref={ref} className={cn(control, "h-8 appearance-none pr-8 max-sm:h-10", className)} {...rest}>
@@ -56,19 +73,23 @@ export function Field({
   className?: string;
   htmlFor?: string;
 }) {
+  const auto = useId();
+  const id = htmlFor ?? `f${auto}`;
+  const noteId = `${id}-note`;
+  const hasNote = !!(error || hint);
   return (
     <div className={cn("flex min-w-0 flex-col gap-1", className)}>
-      <label htmlFor={htmlFor} className="text-[12px] font-medium text-ink-2">
+      <label htmlFor={id} className="text-[12px] font-medium text-ink-2">
         {label}
         {required && <span className="ml-0.5 text-danger" aria-hidden>*</span>}
       </label>
-      {children}
+      <FieldContext.Provider value={{ id, describedBy: hasNote ? noteId : undefined, invalid: !!error }}>{children}</FieldContext.Provider>
       {error ? (
-        <p className="text-[12px] text-danger" role="alert">
+        <p id={noteId} className="text-[12px] text-danger" role="alert">
           {error}
         </p>
       ) : hint ? (
-        <p className="text-[12px] text-ink-3">{hint}</p>
+        <p id={noteId} className="text-[12px] text-ink-3">{hint}</p>
       ) : null}
     </div>
   );

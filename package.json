@@ -12,7 +12,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "node --experimental-strip-types scripts/migrate.ts",
+    "db:migrate": "node --experimental-strip-types scripts/migrate.mts",
     "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm build"
   },
   "dependencies": {
@@ -31,6 +31,7 @@
     "papaparse": "^5.7.0",
     "pdf-lib": "^1.17.1",
     "postgres": "^3.4.9",
+    "qrcode-generator": "^2.0.4",
     "radix-ui": "^1.6.7",
     "react": "19.2.8",
     "react-dom": "19.2.8",

@@ -101,7 +101,8 @@ export function SetupChecklist() {
   const done = new Set(c.setup.completedSteps);
   const today = rules.data ? rules.data.rules : [];
   const autoState = {
-    rules: today.length > 0 && today.filter((r) => r.status !== "retired" && r.status !== "draft").every((r) => r.status === "approved"),
+    // Every statutory code needs an approved version; drafts and demo values do not count.
+    rules: today.length > 0 && [...new Set(today.filter((r) => r.status !== "retired").map((r) => r.code))].every((code) => today.some((r) => r.code === code && r.status === "approved")),
     employees: (employees.data?.total ?? 0) > 0,
     mappings: c.accountMappings.length > 0 && c.accountMappings.every((m) => !!m.accountName.trim()),
   };
@@ -134,7 +135,7 @@ export function SetupChecklist() {
                 <p className={cn("text-[13px] font-medium", isDone && "text-ink-3 line-through decoration-ink-4")}>{s.title}</p>
                 <p className="mt-0.5 text-[12.5px] text-ink-3">{s.detail}</p>
                 {hint !== undefined && !isDone && (
-                  <p className={cn("mt-1 text-[12px]", hint ? "text-success" : "text-warning")}>{hint ? "Looks ready — confirm and tick." : s.auto === "rules" ? (today.some((r) => r.status === "demo") ? "Rules are illustrative demo values — replace with verified rates and approve." : "Some active rules are not yet approved.") : s.auto === "employees" ? "No employees yet." : "Some payroll lines have no account."}</p>
+                  <p className={cn("mt-1 text-[12px]", hint ? "text-success" : "text-warning")}>{hint ? "Looks ready — confirm and tick." : s.auto === "rules" ? (today.some((r) => r.status === "demo") ? "Rules are illustrative demo values — replace with verified rates and approve." : "Some rules are still drafts — verify the rates and approve them.") : s.auto === "employees" ? "No employees yet." : "Some payroll lines have no account."}</p>
                 )}
               </div>
               <Link href={s.href} className="shrink-0 text-[12.5px] font-medium text-accent hover:underline">Open</Link>

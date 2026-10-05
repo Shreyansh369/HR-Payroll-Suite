@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQ } from "@/client/api";
 import { PageHeader, Panel, PanelHeader, LoadingRows, ErrorState, Callout, DescriptionList } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
@@ -19,9 +20,11 @@ async function redirectTo(endpoint: string, body: unknown): Promise<void> {
   window.location.assign(data.url);
 }
 
-export default function BillingPage() {
+function BillingInner() {
   const toast = useToast();
-  const q = useQ("billing.status", {});
+  const params = useSearchParams();
+  const returned = params.get("checkout");
+  const q = useQ("billing.status", {}, { refetchInterval: (query) => (returned === "success" && !query.state.data?.entitlements.active ? 4000 : false) });
   const [busy, setBusy] = useState<string | null>(null);
   const go = async (key: string, endpoint: string, body: unknown) => {
     setBusy(key);
@@ -58,6 +61,12 @@ export default function BillingPage() {
           This is a self-hosted or licensed installation. All features are enabled and no payments are taken in the application. Contact <a className="underline" href={`mailto:${SALES_EMAIL}`}>{SALES_EMAIL}</a> about maintenance renewals.
         </Callout>
       )}
+      {returned === "success" && (
+        <Callout tone={s.entitlements.active ? "success" : "info"} title={s.entitlements.active ? "Your plan is active" : "Waiting for payment confirmation"} className="mb-4">
+          {s.entitlements.active ? "Stripe confirmed your payment. Thank you." : "Stripe has received your checkout. Access is enabled as soon as Stripe confirms the payment to our server — usually within a few seconds. This page updates automatically."}
+        </Callout>
+      )}
+      {returned === "cancelled" && <Callout tone="neutral" className="mb-4">Checkout was cancelled. Nothing was charged.</Callout>}
       {s.entitlements.reason && <Callout tone={s.entitlements.active ? "warning" : "danger"} className="mb-4">{s.entitlements.reason}</Callout>}
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
@@ -99,5 +108,13 @@ export default function BillingPage() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function BillingPage() {
+  return (
+    <Suspense>
+      <BillingInner />
+    </Suspense>
   );
 }

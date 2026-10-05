@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getTransport } from "@/client/api";
@@ -22,6 +22,15 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const [needsSetup, setNeedsSetup] = useState(false);
+
+  useEffect(() => {
+    if (IS_DEMO) return;
+    fetch("/api/setup", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((b: { needsSetup?: boolean } | null) => setNeedsSetup(!!b?.needsSetup))
+      .catch(() => undefined);
+  }, []);
 
   async function submit(e?: React.FormEvent, overrideEmail?: string) {
     e?.preventDefault();
@@ -57,6 +66,11 @@ function LoginForm() {
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
           <h1 className="text-[24px] font-semibold tracking-tight">Sign in</h1>
           <p className="mt-1 text-[13px] text-ink-2">{IS_DEMO ? "This is a demo workspace with fictional companies. Pick an account on the right or use the admin login below." : "Use the email address your administrator registered."}</p>
+          {needsSetup && (
+            <Callout tone="info" title="New installation" className="mt-5" action={<Link href="/setup" className="text-[13px] font-medium text-accent hover:underline">Set up</Link>}>
+              No organisation exists yet. Create the owner account first.
+            </Callout>
+          )}
           <form onSubmit={submit} className="mt-6 space-y-3.5" noValidate>
             <Field label="Email" htmlFor="email">
               <Input id="email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-9" />

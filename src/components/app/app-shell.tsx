@@ -156,6 +156,9 @@ function UserMenu() {
             My profile
           </MenuItem>
         )}
+        <MenuItem icon="key" onSelect={() => router.push("/app/account")}>
+          Account & security
+        </MenuItem>
         {IS_DEMO && (
           <>
             <MenuSeparator />
