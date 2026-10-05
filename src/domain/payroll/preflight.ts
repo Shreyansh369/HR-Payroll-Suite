@@ -17,6 +17,8 @@ export interface PreflightInput {
   currency: string;
   /** In production, unapproved statutory rules block approval. */
   requireApprovedRules: boolean;
+  /** Statutory rule codes that exist only as drafts (no usable rule in force for the period). */
+  draftOnlyRules?: { code: string; name: string }[];
 }
 
 export const SEVERITY_ORDER: Record<PreflightIssue["severity"], number> = { error: 0, warning: 1, info: 2 };
@@ -31,6 +33,15 @@ export function runPreflight(input: PreflightInput): PreflightIssue[] {
 
   if (input.results.length === 0) {
     add({ id: "NO_EMPLOYEES:run", severity: "error", code: "NO_EMPLOYEES", message: "The payroll has no employees." });
+  }
+  for (const r of input.draftOnlyRules ?? []) {
+    add({
+      id: `RULE_DRAFT_ONLY_${r.code}:run`,
+      severity: input.requireApprovedRules ? "error" : "warning",
+      code: `RULE_DRAFT_ONLY_${r.code}`,
+      employeeId: null,
+      message: `${r.name} is not being calculated: its rule for this period is still a draft. Verify the rates and approve the rule.`,
+    });
   }
 
   for (const r of input.results) {

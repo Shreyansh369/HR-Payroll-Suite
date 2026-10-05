@@ -1,9 +1,10 @@
 /**
  * Gathers persisted inputs for a payroll run and invokes the pure calculation engine.
  */
-import type { Company, Employee, PayrollEmployeeResult, PayrollRun } from "@/domain/types";
+import type { Company, Employee, PayrollEmployeeResult, PayrollRun, StatutoryRule } from "@/domain/types";
 import { calculateEmployeePayroll, sumTotals } from "@/domain/payroll/engine";
 import { runPreflight } from "@/domain/payroll/preflight";
+import { selectRules } from "@/domain/statutory/engine";
 import { effectiveOn } from "@/domain/employee/schedule";
 import { departmentNames, finalizedResults, loanOutstanding, FINAL_STATUSES } from "@/services/helpers";
 import type { Ctx } from "@/services/core";
@@ -12,6 +13,18 @@ import { yearOf } from "@/lib/dates";
 import { money, sum } from "@/lib/money";
 
 /** Employees eligible for a regular run of this frequency and period. */
+/** Codes whose only rules covering `date` are drafts, so nothing would be deducted for them. */
+function draftOnly(rules: StatutoryRule[], date: string): { code: string; name: string }[] {
+  const inForce = new Set(selectRules(rules, date).map((r) => r.code));
+  const out = new Map<string, string>();
+  for (const r of rules) {
+    if (r.status !== "draft" || inForce.has(r.code)) continue;
+    if (r.effectiveFrom > date || (r.effectiveTo && r.effectiveTo < date)) continue;
+    out.set(r.code, r.name);
+  }
+  return [...out].map(([code, name]) => ({ code, name }));
+}
+
 export async function eligibleEmployees(ctx: Ctx, frequency: PayrollRun["payFrequency"], start: string, end: string): Promise<Employee[]> {
   const [employees, rates] = await Promise.all([
     ctx.repo.employees.list(ctx.actor.companyId, { where: { status: ["active", "on_leave", "onboarding", "terminated"] } }),
@@ -95,6 +108,7 @@ export async function calculateRun(ctx: Ctx, run: PayrollRun, company: Company):
     varianceThreshold: company.payrollSettings.varianceWarningThreshold,
     currency: company.currency,
     requireApprovedRules: ctx.mode === "production",
+    draftOnlyRules: draftOnly(rules, company.payrollSettings.statutoryDateBasis === "pay_date" ? run.payDate : run.periodEnd),
   });
   const totals = sumTotals(results);
   const stillValid = run.preflight.acknowledged.filter((id) => issues.some((i) => i.id === id && i.severity === "warning"));
