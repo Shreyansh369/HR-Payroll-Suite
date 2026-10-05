@@ -29,6 +29,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  devIndicators: false,
   env: {
     NEXT_PUBLIC_DEMO_MODE: isDemo ? "true" : "false",
     NEXT_PUBLIC_BILLING_ENABLED: !isDemo && process.env.BILLING_ENABLED === "true" ? "true" : "false",

@@ -141,7 +141,7 @@ export default function MePage() {
             {!payslips.data ? <LoadingRows /> : (
               <DataTable
                 columns={[
-                  { key: "date", header: "Pay date", cell: (p) => <span className="num font-medium">{formatDate(p.payDate)}</span> },
+                  { key: "date", header: "Pay date", cell: (p) => <span className="num whitespace-nowrap font-medium">{formatDate(p.payDate)}</span> },
                   { key: "period", header: "Period", hideBelow: "sm", cell: (p) => <span className="text-ink-2">{formatRange(p.periodStart, p.periodEnd)}</span> },
                   { key: "type", header: "", hideBelow: "md", cell: (p) => (p.runType === "correction" ? <Badge tone="info">Correction</Badge> : p.runType === "historical" ? <Badge>Imported</Badge> : null) },
                   { key: "gross", header: "Gross", align: "right", cell: (p) => <Money value={p.gross} currency={ctx.company.currency} /> },
