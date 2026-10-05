@@ -191,7 +191,7 @@ export function TotalsRow({ cells }: { cells: { content: ReactNode; align?: "lef
         <td
           key={i}
           colSpan={c.colSpan}
-          className={cn("border-t border-line-strong bg-surface-2 px-3 py-2 text-[13px] font-semibold text-ink", c.align === "right" && "text-right num", c.hideBelow && hide[c.hideBelow], i === 0 && "sticky left-0")}
+          className={cn("whitespace-nowrap border-t border-line-strong bg-surface-2 px-3 py-2 text-[13px] font-semibold text-ink", c.align === "right" && "text-right num", c.hideBelow && hide[c.hideBelow], i === 0 && "sticky left-0")}
         >
           {c.content}
         </td>

@@ -157,7 +157,7 @@ export interface Repository {
 }
 
 export type TenantCollectionName = {
-  [K in keyof Repository]: Repository[K] extends TenantCollection<infer _> ? K : never;
+  [K in keyof Repository]: Repository[K] extends TenantCollection<CompanyScoped> ? K : never;
 }[keyof Repository];
 
 /** Byte storage for uploaded documents. */

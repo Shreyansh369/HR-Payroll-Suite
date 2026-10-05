@@ -7,7 +7,7 @@ import type { ProcOutput } from "@/services/registry";
 import type { PayFrequency, RateBasis, PayItem } from "@/domain/types";
 import { Panel, PanelHeader, EmptyState, LoadingRows, ErrorState, Callout } from "@/components/ui/panel";
 import { Button, IconButton } from "@/components/ui/button";
-import { Dialog, ConfirmDialog } from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
 import { Field, FormGrid, Input, Select, Checkbox } from "@/components/ui/form";
 import { DataTable, Money } from "@/components/ui/table";
 import { Badge, StatusBadge } from "@/components/ui/badge";

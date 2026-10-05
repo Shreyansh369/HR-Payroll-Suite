@@ -169,6 +169,7 @@ function UserMenu() {
                   const t = await getTransport();
                   const demo = t as unknown as { switchUser: (email: string) => Promise<void> };
                   await demo.switchUser(a.email);
+                  // Full reload: the session, permissions and query cache all change with the user.
                   window.location.assign(a.role === "Employee" ? "/app/me" : "/app");
                 }}
               >
@@ -200,6 +201,7 @@ function UserMenu() {
             const t = await getTransport();
             await (t as unknown as { reset: () => Promise<void> }).reset();
             toast.success("Demo data restored");
+            // eslint-disable-next-line @next/next/no-location-assign-relative-destination
             window.location.assign("/app");
           } catch (e) {
             toast.error("Reset failed", (e as Error).message);
