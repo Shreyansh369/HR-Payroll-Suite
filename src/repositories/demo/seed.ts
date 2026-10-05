@@ -190,7 +190,7 @@ export async function buildDemoSeed(today: ISODate): Promise<DemoSeed> {
     address: Company["address"],
   ) {
     const { company } = await provisionCompany(repo, ids, iso(), org.id, profile, { statutoryStatus: "demo", calendarAnchor: "2026-01-05" });
-    const updated = await repo.companies.update(company.id, { payCalendars: calendars, holidays: HOLIDAYS_2026, employerIds: employer, address, setup: { completedSteps: ["company", "branding", "payroll", "leave", "statutory", "admin", "import", "calendar", "holidays", "accounting"], liveSince: "2026-01-01" } });
+    const updated = await repo.companies.update(company.id, { payCalendars: calendars, holidays: HOLIDAYS_2026, employerIds: employer, address, setup: { completedSteps: ["company_profile", "payroll_settings", "employees", "opening_balances", "account_mappings", "parallel_run", "go_live"], liveSince: "2026-01-01" } });
     const depts: Record<string, string> = {};
     for (const [code, name] of departments) {
       const dep: Department = { id: ids("dept"), companyId: company.id, code, name, parentId: null, createdAt: iso(), updatedAt: iso() };

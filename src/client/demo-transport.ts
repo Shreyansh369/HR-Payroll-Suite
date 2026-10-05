@@ -117,7 +117,8 @@ export class DemoTransport implements Transport {
       if (actor.companyId !== companyId) throw new AppError("FORBIDDEN", "You do not have access to this company.");
       await this.storage.save<SessionInfo>(SESSION_KEY, { userId: s.userId, companyId });
       const ctx = await this.ctx({ userId: s.userId, companyId });
-      await audit(ctx, { action: "auth.company_switched", entityType: "company", entityId: companyId, summary: `Switched to ${companyId}` });
+      const company = await this.repo.companies.get(companyId);
+      await audit(ctx, { action: "auth.company_switched", entityType: "company", entityId: companyId, summary: `Switched to ${company?.tradingName ?? companyId}` });
     });
   }
 

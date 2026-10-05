@@ -23,7 +23,7 @@ import type {
 import { COLLECTIONS, assertPromoted } from "@/repositories/spec";
 import { AppError, conflict, notFound } from "@/lib/errors";
 
-export const STATE_VERSION = 3;
+export const STATE_VERSION = 4;
 
 export type TenantState = { [K in TenantCollectionName]: Record<string, CompanyScoped> };
 

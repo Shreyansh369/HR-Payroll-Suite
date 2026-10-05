@@ -64,7 +64,7 @@ export async function provisionCompany(
     ],
     holidays: [],
     accountMappings: DEFAULT_ACCOUNT_MAPPINGS.map((m) => ({ ...m })),
-    setup: { completedSteps: ["company"] },
+    setup: { completedSteps: [] },
     ...ts,
   };
   await repo.companies.insert(company);

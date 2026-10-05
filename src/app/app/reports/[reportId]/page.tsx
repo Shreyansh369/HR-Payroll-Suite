@@ -109,7 +109,7 @@ function ReportView({ reportId }: { reportId: string }) {
             rows={r!.rows}
             rowKey={(row) => JSON.stringify(row).slice(0, 200) + r!.rows.indexOf(row)}
             empty={<EmptyState compact icon="chart" title="No data for these settings" />}
-            footer={r!.totals ? <TotalsRow cells={r!.columns.map((c, i) => ({ content: c.type === "text" ? String(r!.totals![c.key] ?? "") : displayValue(c, r!.totals![c.key], r!.currency), align: c.type === "money" || c.type === "number" ? "right" : "left", hideBelow: c.priority === 3 ? "lg" : c.priority === 2 ? "md" : undefined }))} /> : undefined}
+            footer={r!.totals ? <TotalsRow cells={r!.columns.map((c) => ({ content: c.type === "text" ? String(r!.totals![c.key] ?? "") : displayValue(c, r!.totals![c.key], r!.currency), align: c.type === "money" || c.type === "number" ? "right" : "left", hideBelow: c.priority === 3 ? "lg" : c.priority === 2 ? "md" : undefined }))} /> : undefined}
           />
         )}
       </Panel>
