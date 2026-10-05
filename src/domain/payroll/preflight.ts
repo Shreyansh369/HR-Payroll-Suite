@@ -35,8 +35,15 @@ export function runPreflight(input: PreflightInput): PreflightIssue[] {
 
   for (const r of input.results) {
     for (const w of r.warnings) {
-      if (input.requireApprovedRules && w.code.startsWith("RULE_NOT_APPROVED")) {
-        add({ ...w, severity: "error", message: `${w.message} Approve the rule before finalizing in production.` });
+      if (w.code.startsWith("RULE_NOT_APPROVED")) {
+        // One run-level issue per rule rather than one per employee.
+        add({
+          ...w,
+          id: `${w.code}:run`,
+          employeeId: null,
+          severity: input.requireApprovedRules ? "error" : "warning",
+          message: input.requireApprovedRules ? `${w.message} Approve the rule before finalizing in production.` : w.message,
+        });
       } else {
         add(w);
       }

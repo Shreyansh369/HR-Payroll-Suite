@@ -71,9 +71,10 @@ export const dashboardProcedures = {
       if (canPayroll) {
         const runs = await ctx.repo.payrollRuns.list(c, { orderBy: [{ field: "payDate", dir: "desc" }] });
         const open = runs.filter((r) => !FINAL_STATUSES.includes(r.status));
-        const finals = runs.filter((r) => FINAL_STATUSES.includes(r.status) && r.type === "regular");
-        const last = finals[0] ?? null;
         const calendar = company.payCalendars.find((x) => x.active) ?? company.payCalendars[0];
+        // Trend and "last payroll" use the primary pay frequency so bars are comparable.
+        const finals = runs.filter((r) => FINAL_STATUSES.includes(r.status) && r.type === "regular" && (!calendar || r.payFrequency === calendar.frequency));
+        const last = finals[0] ?? null;
         const lastOfFreq = runs.find((r) => r.type === "regular" && r.payFrequency === calendar?.frequency);
         const due = calendar ? (lastOfFreq ? nextPeriod(calendar, { end: lastOfFreq.periodEnd }) : periodContaining(calendar, today)) : null;
         const trend = finals
@@ -86,6 +87,7 @@ export const dashboardProcedures = {
           last: last ? { id: last.id, name: last.name, payDate: last.payDate, status: last.status, totals: last.totals } : null,
           due: due ? { ...due, daysUntilPay: diffDays(today, due.payDate), exists: runs.some((r) => r.type === "regular" && r.periodStart === due.start && r.payFrequency === due.frequency) } : null,
           trend,
+          trendFrequency: calendar?.frequency ?? null,
           ytd: {
             gross: money(sum(ytdRuns.map((r) => r.totals?.gross ?? 0))),
             net: money(sum(ytdRuns.map((r) => r.totals?.net ?? 0))),

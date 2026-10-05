@@ -93,7 +93,7 @@ export default function DashboardPage() {
                 )}
               </div>
               <div className="bg-surface p-4">
-                <p className="text-[12px] text-ink-3">Last payroll · net pay</p>
+                <p className="text-[12px] text-ink-3">Last {p.trendFrequency?.replace("_", "-") ?? ""} payroll · net pay</p>
                 <p className="mt-1 text-[22px] font-semibold tracking-tight num">{p.last?.totals ? formatMoney(p.last.totals.net, cur) : "—"}</p>
                 <p className="mt-0.5 truncate text-[12px] text-ink-3">{p.last ? `${p.last.totals?.employees ?? 0} employees · gross ${formatMoney(p.last.totals?.gross ?? 0, cur)}` : "No finalized payroll yet"}</p>
               </div>
@@ -105,7 +105,7 @@ export default function DashboardPage() {
             </div>
             <div className="border-t border-line px-4 pb-4 pt-4">
               <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-                <p className="text-[12.5px] font-medium text-ink">Regular payrolls, last {p.trend.length}</p>
+                <p className="text-[12.5px] font-medium text-ink">{p.trendFrequency ? `${p.trendFrequency.replace("_", "-").replace(/^./, (c) => c.toUpperCase())} payrolls` : "Payrolls"}, last {p.trend.length}</p>
                 <p className="text-[12px] text-ink-3 num">
                   Year to date: gross {formatMoney(p.ytd.gross, cur)} · employer cost {formatMoney(p.ytd.employerCost, cur)}
                 </p>

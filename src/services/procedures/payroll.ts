@@ -438,6 +438,21 @@ export const payrollProcedures = {
     },
   }),
 
+  "payroll.employeeResults": query({
+    input: z.object({ employeeId: idSchema }),
+    permission: "payroll.view",
+    handler: async (ctx, { employeeId }) => {
+      const [results, runs] = await Promise.all([
+        ctx.repo.payrollResults.list(ctx.actor.companyId, { where: { employeeId }, orderBy: [{ field: "payDate", dir: "desc" }] }),
+        ctx.repo.payrollRuns.list(ctx.actor.companyId),
+      ]);
+      const byId = new Map(runs.map((r) => [r.id, r]));
+      return results
+        .filter((r) => byId.has(r.runId))
+        .map((r) => ({ id: r.id, runId: r.runId, runName: byId.get(r.runId)!.name, status: byId.get(r.runId)!.status, runType: r.runType, payDate: r.payDate, periodStart: r.periodStart, periodEnd: r.periodEnd, gross: r.totals.gross, net: r.totals.net, employerCost: r.totals.employerCost }));
+    },
+  }),
+
   "payroll.ytd": query({
     input: z.object({ employeeId: idSchema.optional(), year: z.number().int() }),
     permission: ["payroll.view", "self.view"],
