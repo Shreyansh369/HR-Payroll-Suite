@@ -1,0 +1,9 @@
+Emp No,Full Name,DOB,Dept,Job Title,Start Date,Annual Salary,Basis,Frequency,Manager ID,Email,SS Number
+HHL-101,Danielle Fraser,14/02/1995,Front Office,Reservations Agent,01/11/2026,"$31,200",annual,monthly,HHL-011,danielle.fraser@example.com,SS-301122
+HHL-102,Marlon Hodge,03/07/1990,Food & Beverage,Pastry Chef,01/11/2026,"$38,400",annual,monthly,HHL-005,marlon.hodge@example.com,SS-301123
+HHL-103,Lucia Ortega,22/09/1998,Housekeeping,Room Attendant,01/11/2026,11.25,hourly,biweekly,HHL-014,lucia.ortega@example.com,SS-301124
+HHL-104,Ravi Persaud,30/12/1987,Finance,Accounts Payable Clerk,15/11/2026,"$34,800",annual,monthly,HHL-003,ravi.persaud@example.com,SS-301125
+HHL-105,Grace Wheatley,11/04/2001,Spa & Wellness,Spa Therapist,15/11/2026,2650,monthly,monthly,HHL-001,grace.wheatley@example.com,
+HHL-001,Duplicate Person,01/01/1980,Executive,General Manager,01/01/2020,90000,annual,monthly,,dup@example.com,
+HHL-106,Owen Smith,31/02/1993,Maintenance,Groundskeeper,01/12/2026,12.00,hourly,biweekly,HHL-018,owen.smith@example.com,SS-301127
+HHL-107,Tasha,05/05/1996,Sales & Events,Events Assistant,01/12/2026,29900,annual,monthly,HHL-020,tasha@example,SS-301128
