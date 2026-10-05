@@ -182,7 +182,7 @@ describe("reports, accounting and imports", () => {
   it("imports employees with row-level errors and rejects duplicates", async () => {
     const { repo, storage } = await seededRepo();
     const admin = await as(repo, storage, "demo.admin@example.com");
-    const rows = [
+    const rows: Record<string, string>[] = [
       { "Emp ID": "NEW-1", Name: "Ada Lovelace", DOB: "10/12/1990", Dept: "Finance", Title: "Analyst", "Start date": "01/09/2026", Salary: "$42,000", Basis: "annual", Frequency: "monthly" },
       { "Emp ID": "HHL-001", Name: "Dup Person", DOB: "1990-01-01", Dept: "Finance", Title: "X", "Start date": "2026-01-01" },
       { "Emp ID": "NEW-2", Name: "Bad Date", DOB: "31/31/1990", Dept: "Spa", Title: "Therapist", "Start date": "2026-01-01" },

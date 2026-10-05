@@ -38,15 +38,7 @@ import { ONBOARDING_TEMPLATE, OFFBOARDING_TEMPLATE } from "@/config/defaults";
 import { minimalPdf } from "@/lib/minimal-pdf";
 import { sha256Hex } from "@/lib/bytes";
 
-export const DEMO_PASSWORD = "demo-payroll-2026";
-
-export const DEMO_ACCOUNTS = [
-  { email: "demo.admin@example.com", name: "Morgan Reid", role: "Owner", description: "Full access to all three companies, settings and billing." },
-  { email: "demo.hr@example.com", name: "Renée Faulkner", role: "HR Manager", description: "Employees, leave, documents and onboarding. No salary or payroll." },
-  { email: "demo.payroll@example.com", name: "Alana Christopher", role: "Payroll Officer", description: "Prepares, calculates and approves payroll." },
-  { email: "demo.supervisor@example.com", name: "Kervin Stoutt", role: "Supervisor", description: "Sees the Food & Beverage team only. No salary data." },
-  { email: "demo.employee@example.com", name: "Shanice Penn", role: "Employee", description: "Self-service: own payslips, leave and documents." },
-] as const;
+export { DEMO_PASSWORD, DEMO_ACCOUNTS } from "@/repositories/demo/seed-accounts";
 
 function prng(seed: number) {
   let a = seed >>> 0;
